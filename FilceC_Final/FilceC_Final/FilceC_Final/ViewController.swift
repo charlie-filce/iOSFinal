@@ -23,21 +23,11 @@ class ViewController: UITableViewController {
         navigationItem.rightBarButtonItems = [addButton, alphButton, dateButton]
         //NotificationCenter.default.addObserver(self, selector: #selector(UIApplicationDelegate.applicationDidEnterBackground(_:)), name: NSNotification.UIApplication.didEnterBackgroundNotification, object: nil)
         
-        do {
-            self.todoItems = try [ToDoItem].readFromPersistence()
-        } catch let error as NSError {
-            if error.domain == NSCocoaErrorDomain && error.code == NSFileReadNoSuchFileError {
-                NSLog("No persistence file found")
-            } else {
-                let alert = UIAlertController (
-                    title: "Error",
-                    message: "Could not load to-do items",
-                    preferredStyle: .alert)
-                    
-                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-                self.present(alert, animated: true, completion: nil)
-                NSLog("Error loading from persistence: \(error)")
-            }
+        //StorageHandler.getStorage()
+        if let data = UserDefaults.standard.value(forKey: "todoList") as? Data {
+            let todoList2 = try? PropertyListDecoder().decode(Array<ToDoItem>.self, from: data)
+            
+            todoItems = todoList2 ?? ToDoItem.getMockData()
         }
     }
     
@@ -137,6 +127,7 @@ class ViewController: UITableViewController {
         let newIndex = todoItems.count
         todoItems.append(ToDoItem(title: title, detail: detail, dueDate: dueDate))
         tableView.insertRows(at: [IndexPath(row: newIndex, section: 0)], with: .top)
+        UserDefaults.standard.set(try? PropertyListEncoder().encode(todoItems), forKey: "todoList")
     }
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
@@ -145,6 +136,7 @@ class ViewController: UITableViewController {
             todoItems.remove(at: indexPath.row)
             tableView.deleteRows(at: [indexPath], with: .top)
         }
+        UserDefaults.standard.set(try? PropertyListEncoder().encode(todoItems), forKey: "todoList")
     }
 
 
