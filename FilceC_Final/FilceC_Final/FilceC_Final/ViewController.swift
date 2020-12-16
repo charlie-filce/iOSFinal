@@ -14,8 +14,10 @@ class ViewController: UITableViewController {
         // Do any additional setup after loading the view.
         self.title = "To-Do"
         
-        self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(ViewController.didTapAddItemButton(_:)))
-        
+        let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(ViewController.didTapAddItemButton(_:)))
+        let alphButton = UIBarButtonItem(barButtonSystemItem: .organize, target: self, action: #selector(ViewController.didTapSortAlphButton(_:)))
+        let dateButton = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(ViewController.didTapSortDateButton(_:)))
+        navigationItem.rightBarButtonItems = [addButton, alphButton, dateButton]
         //NotificationCenter.default.addObserver(self, selector: #selector(UIApplicationDelegate.applicationDidEnterBackground(_:)), name: NSNotification.UIApplication.didEnterBackgroundNotification, object: nil)
         
         do {
@@ -52,7 +54,21 @@ class ViewController: UITableViewController {
         
         if indexPath.row < todoItems.count {
             let item = todoItems[indexPath.row]
-            cell.textLabel?.text = item.title
+            
+            if item.detail != "" {
+                if item.dueDate != "" {
+                    cell.textLabel?.text = item.title + " Description: " + item.detail + " Date: " + item.dueDate
+                } else {
+                    cell.textLabel?.text = item.title + " Description: " + item.detail
+                }
+            } else {
+                if item.dueDate != "" {
+                    cell.textLabel?.text = item.title + " Date: " + item.dueDate
+                } else {
+                    cell.textLabel?.text = item.title
+                }
+            }
+            
             
             let accessory: UITableViewCell.AccessoryType = item.done ? .checkmark : .none
             
@@ -79,19 +95,31 @@ class ViewController: UITableViewController {
             preferredStyle: .alert)
         
         alert.addTextField { (textField) in textField.placeholder = "Title"}
+        alert.addTextField { (textField) in textField.placeholder = "Description"}
+        alert.addTextField { (textField) in textField.placeholder = "Date"}
         
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { (_) in
-            if let title = alert.textFields?[0].text {
-                self.addNewToDoItem(title: title)
+            if let title = alert.textFields?[0].text, let detail = alert.textFields?[1].text, let dueDate = alert.textFields?[2].text {
+                self.addNewToDoItem(title: title, detail: detail, dueDate: dueDate)
             }
         }))
         alert.addAction(UIAlertAction(title: "Cancel", style: .default, handler: { (_) in alert.dismiss(animated: true, completion: nil) }))
         self.present(alert, animated: true, completion: nil)
     }
     
-    private func addNewToDoItem(title: String) {
+    @objc func didTapSortAlphButton(_ sender: UIBarButtonItem) {
+        todoItems.sort(by: { $0.title < $1.title })
+        tableView.reloadData()
+    }
+    
+    @objc func didTapSortDateButton(_ sender: UIBarButtonItem) {
+        todoItems.sort(by: { $0.dueDate < $1.dueDate })
+        tableView.reloadData()
+    }
+    
+    private func addNewToDoItem(title: String, detail: String, dueDate: String) {
         let newIndex = todoItems.count
-        todoItems.append(ToDoItem(title: title))
+        todoItems.append(ToDoItem(title: title, detail: detail, dueDate: dueDate))
         tableView.insertRows(at: [IndexPath(row: newIndex, section: 0)], with: .top)
     }
     

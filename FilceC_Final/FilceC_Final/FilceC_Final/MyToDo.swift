@@ -15,6 +15,18 @@ class ToDoItem: NSObject, NSCoding {
             return nil
         }
         
+        if let detail = aDecoder.decodeObject(forKey: "detail") as? String {
+            self.detail = detail
+        } else {
+            return nil
+        }
+        
+        if let dueDate = aDecoder.decodeObject(forKey: "dueDate") as? String {
+            self.dueDate = dueDate
+        } else {
+            return nil
+        }
+        
         if aDecoder.containsValue(forKey: "done") {
             self.done = aDecoder.decodeBool(forKey: "done")
         } else {
@@ -29,9 +41,13 @@ class ToDoItem: NSObject, NSCoding {
     
     var title: String
     var done: Bool
+    var detail: String
+    var dueDate: String
     
-    public init(title: String) {
+    public init(title: String, detail: String, dueDate: String) {
         self.title = title
+        self.detail = detail
+        self.dueDate = dueDate
         self.done = false
     }
 }
@@ -39,10 +55,10 @@ class ToDoItem: NSObject, NSCoding {
 extension ToDoItem {
     public class func getMockData() -> [ToDoItem] {
         return [
-            ToDoItem(title: "Milk"),
-            ToDoItem(title: "Chocolate"),
-            ToDoItem(title: "Bread"),
-            ToDoItem(title: "Cheese")
+            ToDoItem(title: "Milk",detail: "",dueDate: ""),
+            ToDoItem(title: "Chocolate",detail: "",dueDate: ""),
+            ToDoItem(title: "Bread",detail: "",dueDate: ""),
+            ToDoItem(title: "Cheese",detail: "",dueDate: "")
         ]
     }
 }
